@@ -8,15 +8,17 @@ import scala.concurrent.Future
  */
 trait CacheMock extends Cache {
 
+  def name: String = "mock"
+
   override def setupCache() = {}
 
   override def get(id: String): Future[Event] = Future.successful(Event(id, "", "", Map.empty[String, String]))
 
-  override def update(eventId: String, propertyName: String, propertyValue: String): Future[Boolean] = Future.successful(true)
+  override def update(eventId: String, propertyName: String, propertyValue: String): Future[Unit] = Future.successful(())
 
-  override def bulkUpdate(messageId: String, propertyName: String, propertyValue: String): Future[Boolean] = Future.successful(true)
+  override def bulkUpdate(pred: Pred, propertyName: String, propertyValue: String): Future[Unit] = Future.successful(())
 
-  override def subscribe(stmt: Pred, handler: (Event) => Unit): Unit = ()
+  override def subscribe(stmt: Pred, handler: (Event, Event) => Unit): Unit = ()
 
   override def create(ev: Event): Future[Option[Event]] = Future.successful(Some(ev))
 

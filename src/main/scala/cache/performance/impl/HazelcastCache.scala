@@ -19,19 +19,21 @@ trait HazelcastCache extends cache.performance.Cache with Portability {
 
   import scala.collection.JavaConverters._
 
-  def name: String
+  def name: String = "hazel"
 
-  def config: CacheConfig[String, String]
+  def config: Config
 
   val manager = Caching.getCachingProvider().getCacheManager()
 
   def instance: HazelcastInstance
 
-  private val cache = manager.createCache[String, Event, CacheConfig[String, String]](name, config).asInstanceOf[ICache[String, PortableEvent]]
+  private val cache = manager.getCache[String, Event](name).asInstanceOf[ICache[String, PortableEvent]]
 
   private val map = instance.getMap[String, PortableEvent](name)
 
-  private lazy val fixedQueryPool = Executors.newFixedThreadPool(20) //because it doesn't support async queries
+  private val fixedQueryPool = Executors.newFixedThreadPool(20) //because it doesn't support async queries
+
+  private implicit val es = ExecutionContext.fromExecutorService(fixedQueryPool)
 
   implicit class ToScalaFuture[T](f: ICompletableFuture[T]) {
     def asScala = {
@@ -142,4 +144,15 @@ trait Portability extends Model {
     override def getClassId: Int = ClassId
   }
 
+}
+
+object HazelCastCacheScenarios extends App with HazelcastCache with MeasuredCache with Scenarios {
+
+  override val config: Config = new Config()
+
+  config.getNetworkConfig.getJoin.getTcpIpConfig.addMember("192.168.99.100")
+
+  override val instance: HazelcastInstance = Hazelcast.newHazelcastInstance(config)
+
+  override def setupCache(): Unit = {}
 }

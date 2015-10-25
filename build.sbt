@@ -29,5 +29,3 @@ libraryDependencies += "com.websudos" %% "phantom-dsl" % "1.12.2" exclude ("com.
 libraryDependencies += "com.hazelcast" % "hazelcast" % "3.5.3"
 
 libraryDependencies += "javax.cache" % "cache-api" % "1.0.0"
-
-libraryDependencies += "org.apache.solr" % "solr-core" % "4.6.0.3.4-SNAPSHOT"

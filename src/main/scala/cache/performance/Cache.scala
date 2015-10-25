@@ -14,13 +14,15 @@ import scala.concurrent._
 
 trait Cache extends Model {
 
+  def name: String
+
   def setupCache(): Unit
   def get(id: String): Future[Event]
   def query(stmt: Pred, page: Int = 1, pageSize: Int = 20): Future[Seq[Event]]
   def create(ev: Event): Future[Option[Event]]
   def update(eventId: String, propertyName: String, propertyValue: String): Future[Unit]
   def bulkUpdate(stmt: Pred, propertyName: String, propertyValue: String): Future[Unit]
-  def subscribe(stmt: Pred, handler: Event => Unit): Unit
+  def subscribe(stmt: Pred, handler: (Event, Event) => Unit): Unit
 
 }
 
@@ -39,9 +41,9 @@ trait MeasuredCache extends Cache with Instrumented {
   abstract override def bulkUpdate(stmt: Pred, propertyName: String, propertyValue: String): Future[Unit] =
     measure("bulkUpdate")(super.bulkUpdate(stmt, propertyName, propertyValue))
 
-  abstract override def subscribe(stmt: Pred, handler: Event => Unit): Unit = super.subscribe(stmt, e => {
+  abstract override def subscribe(stmt: Pred, handler: (Event, Event) => Unit): Unit = super.subscribe(stmt, (e1: Event, e2: Event) => {
     metrics.counter("trigger.count").inc()
-    handler(e)
+    handler(e1, e2)
   })
 
 }

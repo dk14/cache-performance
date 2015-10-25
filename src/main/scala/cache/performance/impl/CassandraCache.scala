@@ -11,13 +11,15 @@ import scala.concurrent._
 
 trait CassandraCache extends Cache {
 
-  def name: String
+  def name: String = "dse"
 
   val cluster = Cluster.builder().build()
 
   val session = cluster.connect("space")
 
   import com.google.common.util.concurrent._
+
+  import scala.concurrent.ExecutionContext.Implicits.global
 
   implicit class ToFutureList(f: ResultSetFuture){
     import scala.collection.JavaConverters._
@@ -81,7 +83,8 @@ trait CassandraCache extends Cache {
 
   private def rowToEvent(r: Row) = cassandraRowToEvent(CassandraRow.fromJavaDriverRow(r, Array("eventId", "messageId", "data", "props")))
 
-  private def cassandraRowToEvent(r: CassandraRow) = Event(r.get("eventId"), r.get("messageId"), r.get("data"), r.get("props"))
+  private def cassandraRowToEvent(r: CassandraRow) =
+    Event(r.get[String]("eventId"), r.get[String]("messageId"), r.get[String]("data"), r.get[Map[String, String]]("props"))
 
 
 }
