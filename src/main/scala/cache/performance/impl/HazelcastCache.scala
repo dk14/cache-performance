@@ -106,9 +106,7 @@ trait Portability extends Model {
 
   val FactoryId = 1
 
-  def config: Config
-
-  config.getSerializationConfig().addPortableFactory(FactoryId, new PortableFactory {
+  def addPortability(cfg: Config) = cfg.getSerializationConfig().addPortableFactory(FactoryId, new PortableFactory {
     def create(classId: Int ) = if ( ClassId == classId ) new PortableEvent(null) else null
   })
 
@@ -148,11 +146,16 @@ trait Portability extends Model {
 
 object HazelCastCacheScenarios extends App with HazelcastCache with MeasuredCache with Scenarios {
 
-  override val config: Config = new Config()
+  override lazy val config: Config = {
+    val cfg = new Config()
+    cfg.getNetworkConfig.getJoin.getMulticastConfig.setEnabled(true)
+    //cfg.getNetworkConfig.getJoin.getTcpIpConfig.setEnabled(true)
+    //cfg.getNetworkConfig.getJoin.getTcpIpConfig.addMember("192.168.99.100")
+    addPortability(cfg)
+    cfg
+  }
 
-  config.getNetworkConfig.getJoin.getTcpIpConfig.addMember("192.168.99.100")
-
-  override val instance: HazelcastInstance = Hazelcast.newHazelcastInstance(config)
+  override lazy val instance: HazelcastInstance = Hazelcast.newHazelcastInstance(config)
 
   override def setupCache(): Unit = {}
 }

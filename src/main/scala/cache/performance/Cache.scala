@@ -52,7 +52,7 @@ trait MeasuredCache extends Cache with Instrumented {
 object Application {
   val metricRegistry = new com.codahale.metrics.MetricRegistry()
 
-  val statsd = new Statsd("192.168.99.100", 8125)
+  val statsd = new Statsd("kamon-grafana-dashboard", 8125)
 
   val remoteReporter = StatsdReporter.forRegistry(metricRegistry)
     .convertDurationsTo(TimeUnit.MILLISECONDS)
