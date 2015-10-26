@@ -21,7 +21,7 @@ RUN apt-get -y install apt-transport-https &&\
     apt-get -y install curl &&\
     curl -L http://debian.datastax.com/debian/repo_key | sudo apt-key add - &&\
     sudo apt-get update &&\
-    sudo apt-get -y install dse-full &&\
+    sudo apt-get -y install dse-full
 
 RUN apt-get -y install supervisor
 
