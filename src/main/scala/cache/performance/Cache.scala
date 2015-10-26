@@ -28,15 +28,19 @@ trait Cache extends Model {
 
 trait MeasuredCache extends Cache with Instrumented {
 
-  abstract override def get(id: String): Future[Event] = measure("read")(super.get(id))
+  val hostname = Runtime.getRuntime().exec("hostname")
+
+  def nm = name + "." + hostname
+
+  abstract override def get(id: String): Future[Event] = measure(name + ".read")(super.get(id))
 
   abstract override def query(stmt: Pred, page: Int = 1, pageSize: Int = 20): Future[Seq[Event]] =
-    measure("query")(super.query(stmt, page, pageSize))
+    measure(name + ".query")(super.query(stmt, page, pageSize))
 
   abstract override def create(ev: Event): Future[Option[Event]] = measure("create")(super.create(ev))
 
   abstract override def update(eventId: String, propertyName: String, propertyValue: String): Future[Unit] =
-    measure("update")(super.update(eventId, propertyName, propertyValue))
+    measure(name + ".update")(super.update(eventId, propertyName, propertyValue))
 
   abstract override def bulkUpdate(stmt: Pred, propertyName: String, propertyValue: String): Future[Unit] =
     measure("bulkUpdate")(super.bulkUpdate(stmt, propertyName, propertyValue))

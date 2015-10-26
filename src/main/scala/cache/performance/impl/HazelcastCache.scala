@@ -35,6 +35,8 @@ trait HazelcastCache extends cache.performance.Cache with Portability {
 
   private implicit val es = ExecutionContext.fromExecutorService(fixedQueryPool)
 
+  override def setupCache(): Unit = {}
+
   implicit class ToScalaFuture[T](f: ICompletableFuture[T]) {
     def asScala = {
 
@@ -148,14 +150,13 @@ object HazelCastCacheScenarios extends App with HazelcastCache with MeasuredCach
 
   override lazy val config: Config = {
     val cfg = new Config()
-    cfg.getNetworkConfig.getJoin.getMulticastConfig.setEnabled(true)
-    //cfg.getNetworkConfig.getJoin.getTcpIpConfig.setEnabled(true)
-    //cfg.getNetworkConfig.getJoin.getTcpIpConfig.addMember("192.168.99.100")
+    cfg.getNetworkConfig.getJoin.getMulticastConfig.setEnabled(false)
+    cfg.getNetworkConfig.getJoin.getTcpIpConfig.setEnabled(true)
+    cfg.getNetworkConfig.getJoin.getTcpIpConfig.addMember("hazelseed")
     addPortability(cfg)
     cfg
   }
 
   override lazy val instance: HazelcastInstance = Hazelcast.newHazelcastInstance(config)
 
-  override def setupCache(): Unit = {}
 }
