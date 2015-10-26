@@ -23,7 +23,7 @@ trait Scenarios extends Mixtures with Cache with Helper {
   }
 
   implicit class ReportFuture[T](t: Future[T]) {
-    def report(what: String) = t.asTask.runAsync(_.bimap(_.printStackTrace(), _ => println("OK"))) //print error if any
+    def report(what: String) = t.asTask.runAsync(_.bimap(_.printStackTrace(), _ => println(what))) //print error if any
   }
 
   awakeEvery(1 second).map(_ => getEvents.take(1000).toList.map(createAndGet).threeTimesFlatten.report("NEW")).start
