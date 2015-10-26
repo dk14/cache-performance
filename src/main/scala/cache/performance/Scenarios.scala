@@ -19,7 +19,7 @@ trait Scenarios extends Mixtures with Cache with Helper {
   def createAndGet(e: Event) = create(e).map(_.map(_.eventId).map(get).get)
 
   implicit class RichProcess[U](p: Process[Task, U]) {
-    def start = p.run.runAsync(_ => ()) //start process asynchronously
+    def start = p.run.runAsync(_.leftMap(_.printStackTrace())) //start process asynchronously
   }
 
   implicit class ReportFuture[T](t: Future[T]) {
