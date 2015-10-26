@@ -4,6 +4,7 @@ package cache.performance
  * Created by user on 10/23/15.
  */
 
+import java.net.InetAddress
 import java.util.concurrent.TimeUnit
 import com.codahale.metrics.ConsoleReporter
 import nl.grons.metrics.scala.MetricName
@@ -28,11 +29,11 @@ trait Cache extends Model with Helper {
 
 trait MeasuredCache extends Cache with Instrumented {
 
-  val hostname = Runtime.getRuntime().exec("hostname")
+  val hostname = InetAddress.getLocalHost().getHostName()
 
   def nm = name + "." + hostname
 
-  println("Hostname is" + name)
+  println("Hostname is " + name)
 
   abstract override def get(id: String): Future[Event] = measure(name + ".read")(super.get(id))
 
