@@ -27,9 +27,11 @@ RUN apt-get -y install git
 RUN mkdir /opt/hazel && wget -O /opt/hazel/hazelcast.jar http://central.maven.org/maven2/com/hazelcast/hazelcast-all/3.5.3/hazelcast-all-3.5.3.jar
 
 #clone tester
-ADD https://github.com/dk14/cache-performance/archive/master.zip /opt/tester
-RUN cd /opt/tester && sbt test:package
+ADD https://github.com/dk14/cache-performance/archive/master.tar.gz /opt/tester/
+RUN cd /opt/tester/ && tar -zxvf master.tar.gz && rm master.tar.gz
+RUN cd /opt/tester/cache-performance-master && sbt test:package
 
+#configure
 COPY hazelcast.xml /etc/hazelcast.xml
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 EXPOSE 22 5701
