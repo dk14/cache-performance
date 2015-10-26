@@ -29,27 +29,27 @@ trait Cache extends Model with Helper {
 
 trait MeasuredCache extends Cache with Instrumented {
 
-  val hostname = InetAddress.getLocalHost().getHostName()
+  val hostname = Runtime.getRuntime().exec("hostname")
 
   def nm = name + "." + hostname
 
-  println("Hostname is " + name)
+  println("Hostname is " + hostname)
 
-  abstract override def get(id: String): Future[Event] = measure(name + ".read")(super.get(id))
+  abstract override def get(id: String): Future[Event] = measure(nm + ".read")(super.get(id))
 
   abstract override def query(stmt: Pred, page: Int = 1, pageSize: Int = 20): Future[Seq[Event]] =
-    measure(name + ".query")(super.query(stmt, page, pageSize))
+    measure(nm + ".query")(super.query(stmt, page, pageSize))
 
-  abstract override def create(ev: Event): Future[Option[Event]] = measure(name + ".create")(super.create(ev))
+  abstract override def create(ev: Event): Future[Option[Event]] = measure(nm + ".create")(super.create(ev))
 
   abstract override def update(eventId: String, propertyName: String, propertyValue: String): Future[Unit] =
-    measure(name + ".update")(super.update(eventId, propertyName, propertyValue))
+    measure(nm + ".update")(super.update(eventId, propertyName, propertyValue))
 
   abstract override def bulkUpdate(stmt: Pred, propertyName: String, propertyValue: String): Future[Unit] =
-    measure("bulkUpdate")(super.bulkUpdate(stmt, propertyName, propertyValue))
+    measure(nm + "bulkUpdate")(super.bulkUpdate(stmt, propertyName, propertyValue))
 
   abstract override def subscribe(stmt: Pred, handler: (Event, Event) => Unit): Unit = super.subscribe(stmt, (e1: Event, e2: Event) => {
-    metrics.counter("trigger.count").inc()
+    metrics.counter(nm + "trigger.count").inc()
     handler(e1, e2)
   })
 

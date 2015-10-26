@@ -23,13 +23,13 @@ trait HazelcastCache extends cache.performance.Cache with Portability {
 
   def config: Config
 
-  val manager = Caching.getCachingProvider().getCacheManager()
+  lazy val manager = Caching.getCachingProvider().getCacheManager()
 
   def instance: HazelcastInstance
 
-  private val cache = manager.getCache[String, Event](name).asInstanceOf[ICache[String, PortableEvent]]
+  private lazy val cache = manager.getCache[String, Event](name).asInstanceOf[ICache[String, PortableEvent]]
 
-  private val map = instance.getMap[String, PortableEvent](name)
+  private lazy val map = instance.getMap[String, PortableEvent](name)
 
   private val fixedQueryPool = Executors.newFixedThreadPool(20) //because it doesn't support async queries
 
