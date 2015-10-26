@@ -1,4 +1,10 @@
-You can simply run a test cluster:
+#### How to run
+
+Install Docker: https://www.docker.com/docker-toolbox
+
+![Graph1](/docker.png)
+
+So, you can simply run a test cluster:
 
 ```bash
 #remove previous nodes if necessary
@@ -19,5 +25,7 @@ docker run -d --name hazelnode1 -h hazelnode1 --link hazelseed --link kamon-graf
 docker run -d --name hazelnode2 -h hazelnode2 --link hazelseed --link kamon-grafana-dashboard dk14/docker-hazel
 ```
 
-Now you can connect to port 80 to see graphana dashboard with metrics
+Now you can connect to 192.168.99.100:80 to see grafana dashboard with metrics:
+
+![Graph1](/dashboard.png)
 
