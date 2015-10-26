@@ -44,8 +44,9 @@ Write-Through       |    yes                     |    yes (robust write)        
 WriteBehind         |    yes                     |    yes                               |
 Locks               |    yes                     |    no                                |
 EventListeners      | ContinuousQuery (clent)    |    ServerSide: Triggers, SparkStreams|
-EmbeddedPersistence |     no                     |    yes***                            |
-Easy Maintanance    |     yes                    |    no                                |
+EmbeddedPersistence |    no                      |    yes***                            |
+Easy Maintanance    |    yes                     |    no                                |
+Package Size        |    ~7Mb                    |    ~700Mb                            |
 
 `* you can setup N/R/W to choose between AP/CP
 
