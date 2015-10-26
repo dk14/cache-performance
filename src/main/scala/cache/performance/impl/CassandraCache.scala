@@ -8,7 +8,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 
 import scala.concurrent._
-
+import Model._
 
 trait CassandraCache extends Cache {
 

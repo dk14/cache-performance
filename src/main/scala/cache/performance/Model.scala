@@ -25,3 +25,5 @@ trait Model {
   }
 
 }
+
+object Model extends Model with Serializable

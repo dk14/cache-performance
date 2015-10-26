@@ -3,7 +3,8 @@ package cache.performance
 /**
  * Created by user on 10/24/15.
  */
-trait Mixtures extends Model {
+import Model._
+trait Mixtures {
 
   import scala.util.Random
   private implicit class RandomizedList[T](l: List[T]) {

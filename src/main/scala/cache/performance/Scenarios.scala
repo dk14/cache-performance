@@ -4,6 +4,7 @@ import scala.util.{Failure, Success}
 import scala.concurrent._
 import scalaz.concurrent.Task
 import scalaz._,Scalaz._
+import Model._
 
 trait Scenarios extends Mixtures with Cache with Helper {
 
@@ -23,8 +24,10 @@ trait Scenarios extends Mixtures with Cache with Helper {
   }
 
   implicit class ReportFuture[T](t: Future[T]) {
-    def report(what: String) = t.asTask.timed(1000).runAsync(_.bimap(_.printStackTrace(), _ => println(what))) //print error if any
+    def report(what: String) = t.asTask.timed(10000).runAsync(_.bimap(_.printStackTrace(), _ => println(what))) //print error if any
   }
+
+  //create(Event("0", "", "", Map("a" -> "1", "b" -> "3"))).flatMap(_ => get("0")).map(println).report("W-R")
 
   awakeEvery(1 second).map(_ => getEvents.take(1000).toList.map(createAndGet).threeTimesFlatten.report("NEW")).start
 

@@ -6,6 +6,9 @@ import scalaz._, Scalaz._
 /**
  * Created by user on 10/24/15.
  */
+
+import Model._
+
 trait CacheMock extends Cache {
 
 

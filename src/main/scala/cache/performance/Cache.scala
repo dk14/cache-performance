@@ -12,8 +12,11 @@ import statsd.{StatsdReporter, Statsd}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
+import Model._
 
-trait Cache extends Model with Helper {
+import scala.io.Source
+
+trait Cache extends Helper {
 
   def name: String
 
@@ -29,7 +32,7 @@ trait Cache extends Model with Helper {
 
 trait MeasuredCache extends Cache with Instrumented {
 
-  val hostname = Runtime.getRuntime().exec("hostname")
+  val hostname = Source.fromInputStream(Runtime.getRuntime().exec("hostname").getInputStream).mkString
 
   def nm = name + "." + hostname
 

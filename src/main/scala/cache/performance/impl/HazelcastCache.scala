@@ -2,6 +2,7 @@ package cache.performance.impl
 
 import java.util.Map.Entry
 import java.util.concurrent.{Executors}
+import javax.cache.configuration.MutableConfiguration
 
 import cache.performance._
 import com.hazelcast.cache.ICache
@@ -11,13 +12,17 @@ import javax.cache._
 
 import com.hazelcast.map.listener.EntryUpdatedListener
 import com.hazelcast.map.{EntryBackupProcessor, EntryProcessor}
-import com.hazelcast.nio.serialization.{PortableFactory, PortableReader, PortableWriter, Portable}
+import com.hazelcast.nio.serialization._
 
 import scala.concurrent._
+import Model._
 
-trait HazelcastCache extends cache.performance.Cache with Portability {
+trait HazelcastCache extends cache.performance.Cache {
 
   import scala.collection.JavaConverters._
+
+  import Portability._
+  implicit def toPortable(ev: Event) = new PortableEvent(ev)
 
   def name: String = "hazel"
 
@@ -27,7 +32,9 @@ trait HazelcastCache extends cache.performance.Cache with Portability {
 
   def instance: HazelcastInstance
 
-  private lazy val cache = manager.getCache[String, Event](name).asInstanceOf[ICache[String, PortableEvent]]
+  val configuration = new MutableConfiguration[String, PortableEvent]()
+
+  private lazy val cache = manager.createCache[String, PortableEvent, MutableConfiguration[String, PortableEvent]](name, configuration).unwrap( classOf[ICache[String, Event]])
 
   private lazy val map = instance.getMap[String, PortableEvent](name)
 
@@ -68,7 +75,10 @@ trait HazelcastCache extends cache.performance.Cache with Portability {
     map.values(stmt.asHazel).asScala.toSeq.view.map(_.get)
   }
 
-  def create(ev: Event): Future[Option[Event]] = cache.putAsync(ev.eventId, ev).asScala.map(_ => Some(ev.get))
+  import scalaz._, Scalaz._
+
+  def create(ev: Event): Future[Option[Event]] = //execute two operations and merge futures
+    (Future(map.put(ev.eventId, ev)) |@| cache.putAsync(ev.eventId, ev).asScala).tupled.map(_ => Some(ev.get))
 
   def update(eventId: String, propertyName: String, propertyValue: String): Future[Unit] = {
     val processor = new EntryProcessor[String, PortableEvent] {
@@ -94,15 +104,15 @@ trait HazelcastCache extends cache.performance.Cache with Portability {
 
   def subscribe(stmt: Pred, handler: (Event, Event) => Unit): Unit = {
 
-    val listener = new EntryUpdatedListener[String, Event] {
-      override def entryUpdated(event: EntryEvent[String, Event]): Unit = handler(event.getOldValue, event.getValue)
+    val listener = new EntryUpdatedListener[String, PortableEvent] {
+      override def entryUpdated(event: EntryEvent[String, PortableEvent]): Unit = handler(event.getOldValue.get, event.getValue.get)
     }
 
   }
 
 }
 
-trait Portability extends Model {
+object Portability {
 
   val ClassId = 100500
 
@@ -112,47 +122,60 @@ trait Portability extends Model {
     def create(classId: Int ) = if ( ClassId == classId ) new PortableEvent(null) else null
   })
 
-  implicit class PortableEvent(input: Event) extends Portable {
 
-    private var e: Event = input
-    def get: Event = e
 
-    override def readPortable(reader: PortableReader): Unit = {
-      def readString(name: String) = reader.readCharArray(name).mkString
+}
 
-      val eventId = readString("eventId")
-      val messageId = readString("messageId")
-      val data = readString("data")
-      val propNames = readString("propNames").split(",")
+class PortableEvent(input: Event) extends Portable {
+  import Portability._
+  private var e: Event = input
+  def get: Event = e
 
-      val props = propNames.map(n => n -> readString(n)).toMap
+  override def readPortable(reader: PortableReader): Unit = {
+    def readString(name: String) = reader.readUTF(name)
 
-      e = Event(eventId, messageId, data, props)
-    }
+    //println("readPortable!!!!!")
 
-    override def writePortable(writer: PortableWriter): Unit = {
-      def writeString(name: String, value: String) = writer.writeCharArray(name, value.toArray)
-      writeString("eventId", e.eventId)
-      writeString("messageId", e.messageId)
-      writeString("data", e.data)
-      writeString("propNames", e.props.keys.mkString(","))
-      e.props.foreach((writeString _).tupled)
-    }
+    val eventId = readString("eventId")
+    val messageId = readString("messageId")
+    val data = readString("data")
+    val propNames = readString("propNames").split(",")
 
-    override def getFactoryId: Int = FactoryId
+    val props = propNames.map(n => n -> readString(n)).toMap
 
-    override def getClassId: Int = ClassId
+    e = Event(eventId, messageId, data, props)
   }
 
+  override def writePortable(writer: PortableWriter): Unit = {
+
+    //println("writePortable!!!!")
+
+    def writeString(name: String, value: String) = writer.writeUTF(name, value)
+    writeString("eventId", e.eventId)
+    writeString("messageId", e.messageId)
+    writeString("data", e.data)
+    writeString("propNames", e.props.keys.mkString(","))
+    e.props.foreach((writeString _).tupled)
+  }
+
+  override def getFactoryId: Int = FactoryId
+
+  override def getClassId: Int = ClassId
 }
 
 object HazelCastCacheScenarios extends App with HazelcastCache with MeasuredCache with Scenarios {
 
+  import Portability._
   override lazy val config: Config = {
     val cfg = new Config()
     cfg.getNetworkConfig.getJoin.getMulticastConfig.setEnabled(false)
     cfg.getNetworkConfig.getJoin.getTcpIpConfig.setEnabled(true)
     cfg.getNetworkConfig.getJoin.getTcpIpConfig.addMember("hazelseed")
+
+    //val classDefinition = new ClassDefinitionBuilder(FactoryId, ClassId)
+    //  .addUTFField("a").addUTFField("b").addUTFField("propNames").addUTFField("eventId").addUTFField("messageId").addUTFField("data").build()
+    //cfg.getSerializationConfig().addClassDefinition(classDefinition)
+
     addPortability(cfg)
     cfg
   }
