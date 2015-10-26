@@ -16,13 +16,26 @@ docker kill hazelnode1
 docker rm hazelnode1
 docker kill hazelnode2
 docker rm hazelnode2
+docker kill dseseed
+docker rm dseseed
+docker kill dsenode1
+docker rm dsenode1
+docker kill dsenode2
+docker rm dsenode2
 
 
 #start new cluster
 docker run -d -p 80:80 -p 8125:8125/udp -p 8126:8126 --name kamon-grafana-dashboard dk14/docker_grafana_graphite
+
 docker run -d --name hazelseed -h hazelseed --link kamon-grafana-dashboard dk14/docker-hazel
 docker run -d --name hazelnode1 -h hazelnode1 --link hazelseed --link kamon-grafana-dashboard dk14/docker-hazel
 docker run -d --name hazelnode2 -h hazelnode2 --link hazelseed --link kamon-grafana-dashboard dk14/docker-hazel
+
+docker run -d --name dseseed -h dseseed --link kamon-grafana-dashboard dk14/docker-dse
+docker run -d --name dsenode1 -h dsenode1 --link dseseed --link kamon-grafana-dashboard dk14/docker-dse
+docker run -d --name dsenode2 -h dsenode2 --link dseseed --link kamon-grafana-dashboard dk14/docker-dse
+
+
 ```
 
 Now you can connect to 192.168.99.100:80 to see grafana dashboard with metrics:

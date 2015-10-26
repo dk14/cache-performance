@@ -39,5 +39,5 @@ RUN cd /opt/tester/cache-performance && sbt test:package
 #configure
 COPY hazelcast.xml /etc/hazelcast.xml
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-EXPOSE 22 5701
+EXPOSE 22 5701 5702 5703 5704 5705
 CMD ["/usr/bin/supervisord"]

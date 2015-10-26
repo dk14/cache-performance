@@ -3,6 +3,7 @@ import cache.performance._
 import com.datastax.driver.core._
 import com.datastax.spark.connector._
 import com.datastax.spark.connector.rdd.CassandraTableScanRDD
+import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 
@@ -13,9 +14,9 @@ trait CassandraCache extends Cache {
 
   def name: String = "dse"
 
-  val cluster = Cluster.builder().build()
+  val cluster: Cluster
 
-  val session = cluster.connect("space")
+  private val session = cluster.connect("space")
 
   import com.google.common.util.concurrent._
 
@@ -89,5 +90,13 @@ trait CassandraCache extends Cache {
 
 }
 
+object CassandraCacheScenarios extends App with CassandraCache with MeasuredCache with Scenarios {
+
+  lazy val cluster = Cluster.builder().addContactPoint("localhost").build()
+
+  override def setupCache(): Unit = {}
+
+  override lazy val sparkConf: SparkConf = new SparkConf().setAppName("My application")
+}
 
 
