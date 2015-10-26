@@ -12,7 +12,7 @@ import statsd.{StatsdReporter, Statsd}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 
-trait Cache extends Model {
+trait Cache extends Model with Helper {
 
   def name: String
 
@@ -32,12 +32,14 @@ trait MeasuredCache extends Cache with Instrumented {
 
   def nm = name + "." + hostname
 
+  println("Hostname is" + name)
+
   abstract override def get(id: String): Future[Event] = measure(name + ".read")(super.get(id))
 
   abstract override def query(stmt: Pred, page: Int = 1, pageSize: Int = 20): Future[Seq[Event]] =
     measure(name + ".query")(super.query(stmt, page, pageSize))
 
-  abstract override def create(ev: Event): Future[Option[Event]] = measure("create")(super.create(ev))
+  abstract override def create(ev: Event): Future[Option[Event]] = measure(name + ".create")(super.create(ev))
 
   abstract override def update(eventId: String, propertyName: String, propertyValue: String): Future[Unit] =
     measure(name + ".update")(super.update(eventId, propertyName, propertyValue))
