@@ -69,7 +69,7 @@ object Application {
 
   val localReporter = ConsoleReporter.forRegistry(metricRegistry).build()
 
-  //localReporter.start(15, TimeUnit.SECONDS)
+  localReporter.start(15, TimeUnit.SECONDS)
 
   remoteReporter.start(1, TimeUnit.SECONDS)
 
