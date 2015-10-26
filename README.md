@@ -29,3 +29,26 @@ Now you can connect to 192.168.99.100:80 to see grafana dashboard with metrics:
 
 ![Graph1](/dashboard.png)
 
+
+#Hazelcast-Cassandra comparision
+
+Feature             |   Hazelcast 3.5.3          |    DSE (Cassandra+Slr+Spark)         |
+--------------------|:--------------------------:|:------------------------------------:|
+AP-mode             |    yes                     |    yes                               |
+CP-mode             |    no                      |    yes*                              |
+Split-brainOK       |    yes (merge)             |    yes (merge)                       |
+ReactiveAPI         |    partially (no queries)  |    yes                               |
+CRDT                |    no (manual merge)       |    yes                               |
+Queries             |    yes                     |    CQL (restricted), Solr (full) **  |
+Write-Through       |    yes                     |    yes (robust write)                |
+WriteBehind         |    yes                     |    yes                               |
+Locks               |    yes                     |    no                                |
+EventListeners      | ContinuousQuery (clent)    |    ServerSide: Triggers, SparkStreams|
+EmbeddedPersistence |     no                     |    yes***                            |
+Easy Maintanance    |     yes                    |    no                                |
+
+`* you can setup N/R/W to choose between AP/CP
+
+`** Solr is based on Apache Lucene
+
+`*** you can also choose which data are more likely to be written to disk or even turn it off
