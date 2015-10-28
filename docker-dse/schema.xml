@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one or more
+ contributor license agreements.  See the NOTICE file distributed with
+ this work for additional information regarding copyright ownership.
+ The ASF licenses this file to You under the Apache License, Version 2.0
+ (the "License"); you may not use this file except in compliance with
+ the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<schema name="solr_quickstart" version="1.1">
+ <types>
+  <fieldType name="string" class="solr.StrField"/>
+  <fieldType name="text" class="solr.TextField">
+    <analyzer>
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.LowerCaseFilterFactory"/>
+      </analyzer>
+  </fieldType>
+  <fieldType name="int" class="solr.TrieIntField"/>
+ </types>
+ <fields>
+<field name="id" type="int" indexed="true"  stored="true"/>
+<field name="num_smokers" type="int" indexed="true"  stored="true"/>
+<field name="age" type="int" indexed="true"  stored="true"/>
+<field name="age_unit" type="string" indexed="true"  stored="true"/>
+<field name="age_months" type="int" indexed="true"  stored="true"/>
+<field name="major_medical_coverage" type="string" indexed="true"  stored="true"/>
+<field name="dental_coverage" type="string" indexed="true"  stored="true"/>
+<field name="routine_medical_coverage" type="string" indexed="true"  stored="true"/>
+<field name="employer_paid_plan" type="string" indexed="true"  stored="true"/>
+<field name="secondary_smoke" type="string" indexed="true"  stored="true"/>
+<field name="county" type="string" indexed="true"  stored="true"/>
+<field name="screening_month" type="string" indexed="true"  stored="true"/>
+<field name="pets" type="string" indexed="true"  stored="true"/>
+<field name="asthma" type="string" indexed="true"  stored="true"/>
+<field name="bronchitis" type="string" indexed="true"  stored="true"/>
+<field name="goiter" type="string" indexed="true"  stored="true"/>
+<field name="hay_fever" type="string" indexed="true"  stored="true"/>
+<field name="thyroid_disease" type="string" indexed="true"  stored="true"/>
+<field name="chronic_bronchitis" type="string" indexed="true"  stored="true"/>
+<field name="diagnosed_asthma" type="string" indexed="true"  stored="true"/>
+<field name="diagnosed_cataracts" type="string" indexed="true"  stored="true"/>
+<field name="diagnosed_emphysema" type="string" indexed="true"  stored="true"/>
+<field name="diagnosed_goiter" type="string" indexed="true"  stored="true"/>
+<field name="diagnosed_gout" type="string" indexed="true"  stored="true"/>
+<field name="diagnosed_hay_fever" type="string" indexed="true"  stored="true"/>
+<field name="diagnosed_lupus" type="string" indexed="true"  stored="true"/>
+<field name="diagnosed_other_cancer" type="string" indexed="true"  stored="true"/>
+<field name="diagnosed_skin_cancer" type="string" indexed="true"  stored="true"/>
+<field name="diagnosed_stroke" type="string" indexed="true"  stored="true"/>
+<field name="diagnosed_thyroid_disease" type="string" indexed="true"  stored="true"/>
+<field name="diagnosed_congestive_heart_failure" type="string" indexed="true"  stored="true"/>
+<field name="ethnicity" type="string" indexed="true"  stored="true"/>
+<field name="exam_status" type="string" indexed="true"  stored="true"/>
+<field name="family_sequence" type="int" indexed="true"  stored="true"/>
+<field name="family_size" type="int" indexed="true"  stored="true"/>
+<field name="fips" type="string" indexed="true"  stored="true"/>
+<field name="grade_completed" type="string" indexed="true"  stored="true"/>
+<field name="household_size" type="int" indexed="true"  stored="true"/>
+<field name="health_status" type="string" indexed="true"  stored="true"/>
+<field name="marital_status" type="string" indexed="true"  stored="true"/>
+<field name="bird" type="string" indexed="true"  stored="true"/>
+<field name="cat" type="string" indexed="true"  stored="true"/>
+<field name="dog" type="string" indexed="true"  stored="true"/>
+<field name="fish" type="string" indexed="true"  stored="true"/>
+<field name="other_pet" type="string" indexed="true"  stored="true"/>
+<field name="race" type="string" indexed="true"  stored="true"/>
+<field name="race_ethnicity" type="string" indexed="true"  stored="true"/>
+<field name="gender" type="string" indexed="true"  stored="true"/>
+<field name="birthplace" type="string" indexed="true"  stored="true"/>
+<field name="annual_income_20000" type="string" indexed="true"  stored="true"/>
+<field name="income_group" type="int" indexed="true"  stored="true"/>
+<field name="monthly_income_total" type="int" indexed="true"  stored="true"/>
+<field name="all" type="string" docValues="true" indexed="true" stored="false" multiValued="true"/>
+ </fields>
+
+<defaultSearchField>age</defaultSearchField>
+<uniqueKey>(id,age)</uniqueKey>
+<copyField source="age" dest="all"/>
+<copyField source="monthly_income_total" dest="all"/>
+<copyField source="income_group" dest="all"/>
+<copyField source="family_size" dest="all"/>
+<copyField source="family_sequence" dest="all"/>
+<copyField source="household_size" dest="all"/>
+<copyField source="age_months" dest="all"/>
+<copyField source="num_smokers" dest="all"/>
+
+</schema>

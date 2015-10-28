@@ -11,15 +11,13 @@ import Model._
 
 trait CacheMock extends Cache {
 
-
-
   def name: String = "mock"
 
   override def setupCache() = {}
 
-  override def get(id: String): Future[Event] = Event(id, "", "", Map.empty[String, String]).point[Future]
+  override def get(id: String): Future[Event] = Event(id, "", "", Map.empty[String, String]).point[Future] //same as Future(Event(...)) but cleaner, it workds because of Helper.toFut implicit
 
-  override def update(eventId: String, propertyName: String, propertyValue: String): Future[Unit] = ().point[Future]
+  override def update(eventId: String, propertyName: String, propertyValue: String): Future[Unit] = ().point[Future] //looks better than Future.successful(()), isn't it?
 
   override def bulkUpdate(pred: Pred, propertyName: String, propertyValue: String): Future[Unit] = ().point[Future]
 

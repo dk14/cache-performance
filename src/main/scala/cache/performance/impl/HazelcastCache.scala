@@ -75,10 +75,8 @@ trait HazelcastCache extends cache.performance.Cache {
     map.values(stmt.asHazel).asScala.toSeq.view.map(_.get)
   }
 
-  import scalaz._, Scalaz._
-
   def create(ev: Event): Future[Option[Event]] = //execute two operations and merge futures
-    (Future(map.put(ev.eventId, ev)) |@| cache.putAsync(ev.eventId, ev).asScala).tupled.map(_ => Some(ev.get))
+    (Future(map.put(ev.eventId, ev)) zip cache.putAsync(ev.eventId, ev).asScala).map(_ => Some(ev.get)) //you can use applicative builder |@| instead of zip
 
   def update(eventId: String, propertyName: String, propertyValue: String): Future[Unit] = {
     val processor = new EntryProcessor[String, PortableEvent] {

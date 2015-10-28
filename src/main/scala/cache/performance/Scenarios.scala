@@ -20,18 +20,23 @@ trait Scenarios extends Mixtures with Cache with Helper {
   def createAndGet(e: Event) = create(e).map(_.map(_.eventId).map(get).get)
 
   implicit class RichProcess[U](p: Process[Task, U]) {
-    def start = p.run.runAsync(_.leftMap(_.printStackTrace())) //start process asynchronously
+    def start = p.run.runAsync(_.leftMap(_.printStackTrace())) //start process asynchronously and report errors
   }
 
   implicit class ReportFuture[T](t: Future[T]) {
     def report(what: String) = t.asTask.timed(10000).runAsync(_.bimap(_.printStackTrace(), _ => println(what))) //print error if any
   }
 
-  //create(Event("0", "", "", Map("a" -> "1", "b" -> "3"))).flatMap(_ => get("0")).map(println).report("W-R")
+  setupCache()
 
-  awakeEvery(1 second).map(_ => getEvents.take(1000).toList.map(createAndGet).threeTimesFlatten.report("NEW")).start
 
-  awakeEvery(1 second).map(_ => getQueries.take(50).toList.map(query(_)).futureSequence.report("QUERY")).start
+  println("Initial test")
+  createAndGet(getEvents.next()).report("OK")
+  query(getQueries.next()).report("Q-OK")
+
+  //awakeEvery(1 second).map(_ => getEvents.take(1000).toList.map(createAndGet).threeTimesFlatten.report("NEW")).start
+
+  //awakeEvery(1 second).map(_ => getQueries.take(50).toList.map(query(_)).futureSequence.report("QUERY")).start
 
 }
 

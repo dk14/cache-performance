@@ -27,13 +27,36 @@ docker rm dsenode2
 #start new cluster
 docker run -d -p 80:80 -p 8125:8125/udp -p 8126:8126 --name kamon-grafana-dashboard dk14/docker_grafana_graphite
 
-docker run -d --name hazelseed -h hazelseed --link kamon-grafana-dashboard dk14/docker-hazel
+docker run -d --name hazelseed -h hazelseed --link kamon-grafana-dashboard -p 5701:5701 dk14/docker-hazel
 docker run -d --name hazelnode1 -h hazelnode1 --link hazelseed --link kamon-grafana-dashboard dk14/docker-hazel
 docker run -d --name hazelnode2 -h hazelnode2 --link hazelseed --link kamon-grafana-dashboard dk14/docker-hazel
 
-docker run -d --name dseseed -h dseseed --link kamon-grafana-dashboard dk14/docker-dse
+docker run -d --name dseseed -h dseseed --link kamon-grafana-dashboard -p 7000:7000 -p 9042:9042 -p7 077:7077 -p 8983:8983 dk14/docker-dse
 docker run -d --name dsenode1 -h dsenode1 --link dseseed --link kamon-grafana-dashboard dk14/docker-dse
 docker run -d --name dsenode2 -h dsenode2 --link dseseed --link kamon-grafana-dashboard dk14/docker-dse
+
+
+```
+
+Or build it from sources and run
+
+```bash
+
+git clone https://github.com/dk14/cache-performance.git
+cd cache-performance
+docker build -t dse docker-dse
+docker build -t hazel docker-hazel
+
+#start new cluster
+docker run -d -p 80:80 -p 8125:8125/udp -p 8126:8126 --name kamon-grafana-dashboard kamon/grafana_graphite
+
+docker run -d --name hazelseed -h hazelseed --link kamon-grafana-dashboard -p 5701:5701 hazel
+docker run -d --name hazelnode1 -h hazelnode1 --link hazelseed --link kamon-grafana-dashboard hazel
+docker run -d --name hazelnode2 -h hazelnode2 --link hazelseed --link kamon-grafana-dashboard hazel
+
+docker run -d --name dseseed -h dseseed --link kamon-grafana-dashboard -p 7000:7000 -p 9042:9042 -p 7077:7077 -p 8983:8983 dse
+docker run -d --name dsenode1 -h dsenode1 --link dseseed --link kamon-grafana-dashboard dse
+docker run -d --name dsenode2 -h dsenode2 --link dseseed --link kamon-grafana-dashboard dse
 
 
 ```
