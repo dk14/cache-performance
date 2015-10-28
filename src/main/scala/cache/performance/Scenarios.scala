@@ -29,14 +29,10 @@ trait Scenarios extends Mixtures with Cache with Helper {
 
   setupCache()
 
+  awakeEvery(1 second).map(_ => getEvents.take(1000).toList.map(createAndGet).threeTimesFlatten.report("NEW")).start
 
-  println("Initial test")
-  createAndGet(getEvents.next()).report("OK")
-  query(getQueries.next()).report("Q-OK")
-
-  //awakeEvery(1 second).map(_ => getEvents.take(1000).toList.map(createAndGet).threeTimesFlatten.report("NEW")).start
-
-  //awakeEvery(1 second).map(_ => getQueries.take(50).toList.map(query(_)).futureSequence.report("QUERY")).start
+  if (name != "dse")
+    awakeEvery(1 second).map(_ => getQueries.take(50).toList.map(query(_)).futureSequence.report("QUERY")).start
 
 }
 
