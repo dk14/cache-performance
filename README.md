@@ -48,7 +48,7 @@ docker build -t dse docker-dse
 docker build -t hazel docker-hazel
 
 #start new cluster
-docker run -d -p 80:80 -p 8125:8125/udp -p 8126:8126 --name kamon-grafana-dashboard kamon/grafana_graphite
+docker run -d -p 80:80 -p 8125:8125/udp -p 8126:8126 --name kamon-grafana-dashboard kamon/grafana_graphite #pure grafana here, need setup
 
 docker run -d --name hazelseed -h hazelseed --link kamon-grafana-dashboard -p 5701:5701 hazel
 docker run -d --name hazelnode1 -h hazelnode1 --link hazelseed --link kamon-grafana-dashboard hazel
@@ -61,7 +61,7 @@ docker run -d --name dsenode2 -h dsenode2 --link dseseed --link kamon-grafana-da
 
 ```
 
-Now you can connect to 192.168.99.100:80 ([setup]()to see grafana dashboard with metrics:
+Now you can connect to 192.168.99.100:80 ([setup](https://github.com/kamon-io/docker-grafana-graphite)) to see grafana dashboard with metrics:
 
 ![Graph1](/dashboard.png)
 
