@@ -61,9 +61,11 @@ docker run -d --name dsenode2 -h dsenode2 --link dseseed --link kamon-grafana-da
 
 ```
 
-Now you can connect to 192.168.99.100:80 to see grafana dashboard with metrics:
+Now you can connect to 192.168.99.100:80 ([setup]()to see grafana dashboard with metrics:
 
 ![Graph1](/dashboard.png)
+
+![Graph1](/grafana2.png)
 
 
 #### Run without docker
