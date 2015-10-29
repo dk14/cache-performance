@@ -66,6 +66,17 @@ Now you can connect to 192.168.99.100:80 to see grafana dashboard with metrics:
 ![Graph1](/dashboard.png)
 
 
+#### Run without docker
+
+Just clone it and execute:
+
+```
+sbt run
+```
+
+Then choose the cache you need. For cassandra you need host named "dseseed" with cassandra. For Hazelcast you can create seed-node "hazelseed" to discover a cluste.
+Measurements would be reported every 15 seconds right to your console.
+
 #Hazelcast-Cassandra comparision
 
 Feature               |   Hazelcast 3.5.3          |    DSE (Cassandra+Solr+Spark)           |
