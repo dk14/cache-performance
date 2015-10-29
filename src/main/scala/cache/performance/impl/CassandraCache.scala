@@ -55,10 +55,27 @@ trait CassandraCache extends Cache {
   }
 
 
-  def setupCache(): Unit
+  override def setupCache(): Unit = {
+    val session = cluster.connect()
+    def ifNotExists[T](f: => T) = Try (f).recover { case e: AlreadyExistsException => }.get
 
-  def get(id: String): Future[Event] =
-    session.executeAsync("SELECT * FROM events WHERE eventId=?0", id).asScala.map(_.map(rowToEvent).head)
+    ifNotExists(session.execute("CREATE KEYSPACE space WITH replication = {'class':'SimpleStrategy', 'replication_factor':3};"))
+    ifNotExists(session.execute(
+      """
+        |CREATE TABLE space.events(
+        |  eventId varchar,
+        |  messageId varchar,
+        |  data text,
+        |  props map<varchar,varchar>,
+        |  PRIMARY KEY (eventId)
+        |);
+      """.stripMargin))
+
+
+  }
+
+  def get(id: String): Future[Option[Event]] =
+    session.executeAsync("SELECT * FROM events WHERE eventId=?0", id).asScala.map(_.map(rowToEvent).headOption)
 
   def query(stmt: Pred, page: Int = 1, pageSize: Int = 20): Future[Seq[Event]] = {
     println(s"SELECT * FROM events WHERE solr='${stmt.asSolr}'")
@@ -66,12 +83,12 @@ trait CassandraCache extends Cache {
 
   }
 
-  def create(ev: Event): Future[Option[Event]] = {
+  def create(ev: Event): Future[Event] = {
     import ev._
     val mkProps = props.map{case (k,v) => s"'$k':'$v'"}.mkString(",")
     val res = session.executeAsync(
       s"INSERT INTO space.events (eventId, messageId, data, props) VALUES( '$eventId','$messageId','$data',{$mkProps});")
-    res.asScala.map(_ => Some(ev))
+    res.asScala.map(_ => ev)
   }
 
   def update(eventId: String, propertyName: String, propertyValue: String): Future[Unit] =
@@ -101,24 +118,6 @@ object CassandraCacheScenarios extends App with CassandraCache with MeasuredCach
 
   lazy val cluster = Cluster.builder().addContactPoint("localhost").addContactPoint("dseseed").build()
 
-  override def setupCache(): Unit = {
-    val session = cluster.connect()
-    def ifNotExists[T](f: => T) = Try (f).recover { case e: AlreadyExistsException => }.get
-
-    ifNotExists(session.execute("CREATE KEYSPACE space WITH replication = {'class':'SimpleStrategy', 'replication_factor':3};"))
-    ifNotExists(session.execute(
-        """
-          |CREATE TABLE space.events(
-          |  eventId varchar,
-          |  messageId varchar,
-          |  data text,
-          |  props map<varchar,varchar>,
-          |  PRIMARY KEY (eventId)
-          |);
-        """.stripMargin))
-
-
-  }
 
   override lazy val sparkConf: SparkConf = new SparkConf()
     .set("spark.cassandra.connection.host", "dseseed")

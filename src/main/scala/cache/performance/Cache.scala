@@ -21,9 +21,9 @@ trait Cache extends Helper {
   def name: String
 
   def setupCache(): Unit
-  def get(id: String): Future[Event]
+  def get(id: String): Future[Option[Event]]
   def query(stmt: Pred, page: Int = 1, pageSize: Int = 20): Future[Seq[Event]]
-  def create(ev: Event): Future[Option[Event]]
+  def create(ev: Event): Future[Event]
   def update(eventId: String, propertyName: String, propertyValue: String): Future[Unit]
   def bulkUpdate(stmt: Pred, propertyName: String, propertyValue: String): Future[Unit]
   def subscribe(stmt: Pred, handler: (Event, Event) => Unit): Unit
@@ -38,12 +38,12 @@ trait MeasuredCache extends Cache with Instrumented {
 
   println("Hostname is " + hostname)
 
-  abstract override def get(id: String): Future[Event] = measure(nm + ".read")(super.get(id))
+  abstract override def get(id: String): Future[Option[Event]] = measure(nm + ".read")(super.get(id))
 
   abstract override def query(stmt: Pred, page: Int = 1, pageSize: Int = 20): Future[Seq[Event]] =
     measure(nm + ".query")(super.query(stmt, page, pageSize))
 
-  abstract override def create(ev: Event): Future[Option[Event]] = measure(nm + ".create")(super.create(ev))
+  abstract override def create(ev: Event): Future[Event] = measure(nm + ".create")(super.create(ev))
 
   abstract override def update(eventId: String, propertyName: String, propertyValue: String): Future[Unit] =
     measure(nm + ".update")(super.update(eventId, propertyName, propertyValue))

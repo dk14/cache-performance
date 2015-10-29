@@ -22,7 +22,9 @@ trait HazelcastCache extends cache.performance.Cache {
   import scala.collection.JavaConverters._
 
   import Portability._
-  implicit def toPortable(ev: Event) = new PortableEvent(ev)
+  implicit class ToPortable(ev: Event)  {
+    def portable = new PortableEvent(ev)
+  }
 
   def name: String = "hazel"
 
@@ -34,8 +36,6 @@ trait HazelcastCache extends cache.performance.Cache {
 
   val configuration = new MutableConfiguration[String, PortableEvent]()
 
-  private lazy val cache = manager.createCache[String, PortableEvent, MutableConfiguration[String, PortableEvent]](name, configuration).unwrap( classOf[ICache[String, Event]])
-
   private lazy val map = instance.getMap[String, PortableEvent](name)
 
   private val fixedQueryPool = Executors.newFixedThreadPool(20) //because it doesn't support async queries
@@ -44,18 +44,6 @@ trait HazelcastCache extends cache.performance.Cache {
 
   override def setupCache(): Unit = {}
 
-  implicit class ToScalaFuture[T](f: ICompletableFuture[T]) {
-    def asScala = {
-
-      val p = Promise[T]()
-      f.andThen(new ExecutionCallback[T] {
-        override def onFailure(t: Throwable): Unit = p.failure(t)
-
-        override def onResponse(response: T): Unit = p.success(response)
-      })
-      p.future
-    }
-  }
 
   import com.hazelcast.query._
 
@@ -69,14 +57,14 @@ trait HazelcastCache extends cache.performance.Cache {
   }
 
 
-  def get(id: String): Future[Event] = cache.getAsync(id).asScala.map(_.get)
+  def get(id: String): Future[Option[Event]] = Future(Option(map.get(id).get))
 
   def query(stmt: Pred, page: Int = 1, pageSize: Int = 20): Future[Seq[Event]] = Future {
     map.values(stmt.asHazel).asScala.toSeq.view.map(_.get)
   }
 
-  def create(ev: Event): Future[Option[Event]] = //execute two operations and merge futures
-    (Future(map.put(ev.eventId, ev)) zip cache.putAsync(ev.eventId, ev).asScala).map(_ => Some(ev.get)) //you can use applicative builder |@| instead of zip
+  def create(ev: Event): Future[Event] = //execute two operations and merge futures
+    Future{map.put(ev.eventId, ev.portable); ev}
 
   def update(eventId: String, propertyName: String, propertyValue: String): Future[Unit] = {
     val processor = new EntryProcessor[String, PortableEvent] {
@@ -116,6 +104,8 @@ object Portability {
 
   val FactoryId = 1
 
+  lazy val knownFields = Set("a", "b", "c")
+
   def addPortability(cfg: Config) = cfg.getSerializationConfig().addPortableFactory(FactoryId, new PortableFactory {
     def create(classId: Int ) = if ( ClassId == classId ) new PortableEvent(null) else null
   })
@@ -137,9 +127,12 @@ class PortableEvent(input: Event) extends Portable {
     val eventId = readString("eventId")
     val messageId = readString("messageId")
     val data = readString("data")
-    val propNames = readString("propNames").split(",")
+    val unknownProps = readString("etc") split "," map { x =>
+      val split = x.split("=")
+      split(0) -> split(1)
+    } toMap
 
-    val props = propNames.map(n => n -> readString(n)).toMap
+    val props = knownFields.map(n => n -> readString(n)).toMap ++ unknownProps
 
     e = Event(eventId, messageId, data, props)
   }
@@ -153,7 +146,11 @@ class PortableEvent(input: Event) extends Portable {
     writeString("messageId", e.messageId)
     writeString("data", e.data)
     writeString("propNames", e.props.keys.mkString(","))
-    e.props.foreach((writeString _).tupled)
+    val (known, etc) = e.props.partition(x => knownFields.contains(x._1))
+    known.foreach((writeString _).tupled)
+
+    val mk = (a: String, b: String) => a + "=" + b
+    writeString("etc", etc.map(mk.tupled).reduce(_ + "," + _))
   }
 
   override def getFactoryId: Int = FactoryId
@@ -170,9 +167,12 @@ object HazelCastCacheScenarios extends App with HazelcastCache with MeasuredCach
     cfg.getNetworkConfig.getJoin.getTcpIpConfig.setEnabled(true)
     cfg.getNetworkConfig.getJoin.getTcpIpConfig.addMember("hazelseed")
 
-    //val classDefinition = new ClassDefinitionBuilder(FactoryId, ClassId)
-    //  .addUTFField("a").addUTFField("b").addUTFField("propNames").addUTFField("eventId").addUTFField("messageId").addUTFField("data").build()
-    //cfg.getSerializationConfig().addClassDefinition(classDefinition)
+    def addFields(bld: ClassDefinitionBuilder, l: List[String]): ClassDefinitionBuilder =
+      l.headOption.map(x => addFields(bld.addUTFField(x), l.tail)).getOrElse(bld)
+
+    val classDefinition = addFields(new ClassDefinitionBuilder(FactoryId, ClassId), knownFields.toList)
+      .addUTFField("etc").addUTFField("propNames").addUTFField("eventId").addUTFField("messageId").addUTFField("data").build()
+    cfg.getSerializationConfig().addClassDefinition(classDefinition)
 
     addPortability(cfg)
     cfg

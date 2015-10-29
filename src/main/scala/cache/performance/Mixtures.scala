@@ -15,7 +15,8 @@ trait Mixtures {
     Event(Random.nextInt().toString, "0", data, Map("a" -> "1") ++ bonus),
     Event(Random.nextInt().toString, "0", data, Map("a" -> "1", "b" -> "3") ++ bonus),
     Event(Random.nextInt().toString, "0", data, Map("a" -> "1", "b" -> "4") ++ bonus),
-    Event(Random.nextInt().toString, "0", data, Map("a" -> "11", "b" -> "4") ++ bonus)
+    Event(Random.nextInt().toString, "0", data, Map("a" -> "11", "b" -> "4") ++ bonus),
+    Event(Random.nextInt().toString, "0", data, Map("a" -> "11", "b" -> "4", "c" -> "6") ++ bonus)
   ).random
 
   def getQueries: Iterator[Pred] = List(

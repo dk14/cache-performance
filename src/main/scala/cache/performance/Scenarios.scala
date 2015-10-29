@@ -17,22 +17,22 @@ trait Scenarios extends Mixtures with Cache with Helper {
   implicit val sc = new java.util.concurrent.ScheduledThreadPoolExecutor(1)
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def createAndGet(e: Event) = create(e).map(_.map(_.eventId).map(get).get)
+  def createAndGet(e: Event) = create(e).map(_.eventId).flatMap(get).map(_.get)
 
   implicit class RichProcess[U](p: Process[Task, U]) {
     def start = p.run.runAsync(_.leftMap(_.printStackTrace())) //start process asynchronously and report errors
   }
 
   implicit class ReportFuture[T](t: Future[T]) {
-    def report(what: String) = t.asTask.timed(10000).runAsync(_.bimap(_.printStackTrace(), _ => println(what))) //print error if any
+    def report(how: T => String) = t.asTask.timed(10000).runAsync(_.bimap(_.printStackTrace(), x => println(how(x)))) //print error if any
   }
 
   setupCache()
 
-  awakeEvery(1 second).map(_ => getEvents.take(1000).toList.map(createAndGet).threeTimesFlatten.report("NEW")).start
+  awakeEvery(1 second).map(_ => getEvents.take(1000).toList.map(createAndGet).futureSequence.report(x => s"NEW ${x.length}")).start
 
   if (name != "dse")
-    awakeEvery(1 second).map(_ => getQueries.take(50).toList.map(query(_)).futureSequence.report("QUERY")).start
+    awakeEvery(1 second).map(_ => getQueries.take(50).toList.map(query(_)).futureSequence.report(x => s"QUERY ${x.length}")).start
 
 }
 
@@ -40,11 +40,7 @@ trait Helper { //flattening futures to extract failures
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  implicit class FutureFlattener[T](f: List[Future[Future[T]]]) {
-    def threeTimesFlatten = f.map(_.flatMap(identity)).futureSequence
-  }
-
-  implicit class FutureFlattener2[T](f: List[Future[T]]) {
+  implicit class FutureFlattener[T](f: List[Future[T]]) {
     def futureSequence = Future.sequence(f)
   }
 
