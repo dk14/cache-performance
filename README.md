@@ -67,6 +67,13 @@ Now you can connect to 192.168.99.100:80 ([setup](https://github.com/kamon-io/do
 
 ![Graph1](/grafana2.png)
 
+You can access logs with: 
+
+```bash
+docker exec -it hazelseed bash #or any other node
+cd /var/log/supervisor
+
+```
 
 #### Run without docker
 

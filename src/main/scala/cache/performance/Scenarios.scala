@@ -24,7 +24,7 @@ trait Scenarios extends Mixtures with Cache with Helper {
   }
 
   implicit class ReportFuture[T](t: Future[T]) {
-    def report(how: T => String) = t.asTask.timed(60000).runAsync(_.bimap(_.printStackTrace(), x => println(how(x)))) //print error if any
+    def report(how: T => String) = t.asTask.timed(200000).runAsync(_.bimap(_.printStackTrace(), x => println(how(x)))) //print error if any
   }
 
   setupCache()
