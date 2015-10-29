@@ -63,8 +63,10 @@ trait HazelcastCache extends cache.performance.Cache {
     map.values(stmt.asHazel).asScala.toSeq.view.map(_.get)
   }
 
-  def create(ev: Event): Future[Event] = //execute two operations and merge futures
-    Future{map.put(ev.eventId, ev.portable); ev}
+  def create(ev: Event): Future[Event] = Future{
+    map.put(ev.eventId, ev.portable)
+    ev
+  }
 
   def update(eventId: String, propertyName: String, propertyValue: String): Future[Unit] = {
     val processor = new EntryProcessor[String, PortableEvent] {
@@ -101,7 +103,6 @@ trait HazelcastCache extends cache.performance.Cache {
 object Portability {
 
   val ClassId = 100500
-
   val FactoryId = 1
 
   lazy val knownFields = Set("a", "b", "c")
@@ -109,9 +110,7 @@ object Portability {
   def addPortability(cfg: Config) = cfg.getSerializationConfig().addPortableFactory(FactoryId, new PortableFactory {
     def create(classId: Int ) = if ( ClassId == classId ) new PortableEvent(null) else null
   })
-
-
-
+  
 }
 
 class PortableEvent(input: Event) extends Portable {
