@@ -54,7 +54,6 @@ trait CassandraCache extends Cache {
     def withPredicate(pred: Pred): RDD[T] = p.select("*").where(s"solr='${pred.asSolr}'")
   }
 
-
   override def setupCache(): Unit = {
     val session = cluster.connect()
     def ifNotExists[T](f: => T) = Try (f).recover { case e: AlreadyExistsException => }.get
@@ -79,8 +78,7 @@ trait CassandraCache extends Cache {
 
   def query(stmt: Pred, page: Int = 1, pageSize: Int = 20): Future[Seq[Event]] = {
     println(s"SELECT * FROM events WHERE solr='${stmt.asSolr}'")
-    session.executeAsync(s"SELECT * FROM events WHERE solr_query='${stmt.asSolr}'").asScala.map(_.map(rowToEvent))
-
+    session.executeAsync(s"SELECT * FROM events WHERE solr_query='${stmt.asSolr}'").asScala.map(_ map rowToEvent)
   }
 
   def create(ev: Event): Future[Event] = {
@@ -99,6 +97,7 @@ trait CassandraCache extends Cache {
 
   import com.datastax.spark.connector.streaming._
   import org.apache.spark._
+  
   def sparkConf: SparkConf
   lazy val ssc = new StreamingContext(sparkConf, Seconds(1))
   lazy val rdd = ssc.cassandraTable("space", name)
@@ -117,7 +116,6 @@ trait CassandraCache extends Cache {
 object CassandraCacheScenarios extends App with CassandraCache with MeasuredCache with Scenarios {
 
   lazy val cluster = Cluster.builder().addContactPoint("localhost").addContactPoint("dseseed").build()
-
 
   override lazy val sparkConf: SparkConf = new SparkConf()
     .set("spark.cassandra.connection.host", "dseseed")
