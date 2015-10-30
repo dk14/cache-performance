@@ -4,6 +4,8 @@ version := "1.0"
 
 scalaVersion := "2.11.7"
 
+unmanagedBase := baseDirectory.value / "docker-coh"
+
 libraryDependencies += "nl.grons"          %% "metrics-scala"    % "3.5.1_a2.3"
 
 libraryDependencies += "org.scalaz"        %% "scalaz-core"      % "7.1.0"

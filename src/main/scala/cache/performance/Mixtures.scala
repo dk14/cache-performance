@@ -9,7 +9,7 @@ trait Mixtures {
   }
 
   lazy val data = List.fill(10000)("data" + Random.nextInt()).mkString
-  lazy val bonus = List.fill(10)("field" + Math.abs(Random.nextInt()) -> "value").toMap
+  def bonus = List.fill(10)("field" + Math.abs(Random.nextInt()) -> "value").toMap
 
   def getEvents: Iterator[Event] = List(
     Event(Random.nextInt().toString, "0", data, Map("a" -> "1") ++ bonus),

@@ -38,9 +38,9 @@ trait HazelcastCache extends cache.performance.Cache {
 
   private lazy val map = instance.getMap[String, PortableEvent](name)
 
-  private val fixedQueryPool = Executors.newFixedThreadPool(20) //because it doesn't support async queries
+  private val pool = Executors.newFixedThreadPool(20) //because it doesn't support async operations
 
-  private implicit val es = ExecutionContext.fromExecutorService(fixedQueryPool)
+  private implicit val es = ExecutionContext.fromExecutorService(pool)
 
   override def setupCache(): Unit = {}
 
@@ -106,6 +106,7 @@ object Portability {
   val FactoryId = 1
 
   lazy val knownFields = Set("a", "b", "c")
+  lazy val knownFieldsList = knownFields.toList
 
   def addPortability(cfg: Config) = cfg.getSerializationConfig().addPortableFactory(FactoryId, new PortableFactory {
     def create(classId: Int ) = if ( ClassId == classId ) new PortableEvent(null) else null

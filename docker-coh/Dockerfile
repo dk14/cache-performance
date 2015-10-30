@@ -13,8 +13,6 @@ RUN sbt update
 
 RUN apt-get -y install wget
 
-RUN mkdir /opt/hazel && wget -O /opt/hazel/hazelcast.jar http://central.maven.org/maven2/com/hazelcast/hazelcast-all/3.5.3/hazelcast-all-3.5.3.jar
-
 #clone tester
 RUN mkdir /opt/tester &&\
     cd /opt/tester/ &&\

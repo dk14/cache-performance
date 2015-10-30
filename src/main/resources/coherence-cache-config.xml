@@ -1,0 +1,39 @@
+<cache-config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xmlns="http://xmlns.oracle.com/coherence/coherence-cache-config"
+              xsi:schemaLocation="http://xmlns.oracle.com/coherence/coherence-cache-config http://xmlns.oracle.com/coherence/coherence-cache-config/1.0/coherence-cache-config.xsd">
+    <caching-scheme-mapping>
+        <cache-mapping>
+            <cache-name>events</cache-name>
+            <scheme-name>scheme</scheme-name>
+        </cache-mapping>
+
+    </caching-scheme-mapping>
+
+    <caching-schemes>
+        <distributed-scheme>
+            <scheme-name>scheme</scheme-name>
+            <service-name>events</service-name>
+
+            <serializer>
+                <instance>
+                    <class-name>com.tangosol.io.pof.ConfigurablePofContext</class-name>
+                    <init-params>
+                        <init-param>
+                            <param-type>String</param-type>
+                            <param-value>pof-config.xml</param-value>
+                        </init-param>
+                    </init-params>
+                </instance>
+            </serializer>
+            <backing-map-scheme>
+                <read-write-backing-map-scheme>
+                    <internal-cache-scheme>
+                        <local-scheme/>
+                    </internal-cache-scheme>
+                </read-write-backing-map-scheme>
+            </backing-map-scheme>
+            <autostart>true</autostart>
+        </distributed-scheme>
+        </caching-schemes>
+
+</cache-config>

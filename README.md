@@ -65,7 +65,11 @@ Now you can connect to 192.168.99.100:80 ([setup](https://github.com/kamon-io/do
 
 ![Graph1](/dashboard.png)
 
-![Graph1](/grafana2.png)
+![Graph2](/grafana2.png)
+
+Coherence vs Hazelcast
+
+![Graph3](/hazelcoh.png)
 
 You can access logs with: 
 
