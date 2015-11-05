@@ -87,8 +87,8 @@ Just clone it and execute:
 sbt run
 ```
 
-Then choose the cache you need. For cassandra you need host named "dseseed" with cassandra. For Hazelcast you can create seed-node "hazelseed" to discover a cluste.
-Measurements would be reported every 15 seconds right to your console.
+Then choose the cache you need. For cassandra you need host named "dseseed" with sever-part. For Hazelcast you can create seed-node "hazelseed" to discover a cluster.
+Measurements will be reported every 15 seconds right to your console.
 
 #Hazelcast-Cassandra comparision
 
